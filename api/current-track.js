@@ -2,6 +2,9 @@ const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const REFRESH_TOKEN = process.env.SPOTIFY_REFRESH_TOKEN;
 
+const progressMs = song.progress_ms; // Current position in milliseconds
+const durationMs = song.item.duration_ms; // Total duration in milliseconds
+
 async function getAccessToken() {
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -57,7 +60,9 @@ export default async function handler(req, res) {
       artist,
       album,
       albumImageUrl,
-      songUrl
+      songUrl,
+      progressMs,
+      durationMs  
     });
     
   } catch (error) {
