@@ -47,21 +47,15 @@ export default async function handler(req, res) {
       return res.status(200).json({ isPlaying: false });
     }
 
-  } catch (error) {
-    console.error('Error fetching currently playing:', error);
-    return res.status(500).json({ error: 'Failed to fetch currently playing track', details: error.message });
-  }
-}
-    
     const isPlaying = song.is_playing;
     const title = song.item.name;
     const artist = song.item.artists.map(artist => artist.name).join(', ');
     const album = song.item.album.name;
     const albumImageUrl = song.item.album.images[0]?.url;
     const songUrl = song.item.external_urls.spotify;
-    const progressMs = song.progress_ms; // Current position in milliseconds
-    const durationMs = song.item.duration_ms; // Total duration in milliseconds
-    
+    const progressMs = song.progress_ms;
+    const durationMs = song.item.duration_ms;
+
     return res.status(200).json({
       isPlaying,
       title,
@@ -70,11 +64,11 @@ export default async function handler(req, res) {
       albumImageUrl,
       songUrl,
       progressMs,
-      durationMs  
+      durationMs
     });
-    
+
   } catch (error) {
     console.error('Error fetching currently playing:', error);
-    return res.status(500).json({ error: 'Failed to fetch currently playing track' });
+    return res.status(500).json({ error: 'Failed to fetch currently playing track', details: error.message });
   }
 }
