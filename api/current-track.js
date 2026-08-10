@@ -14,35 +14,44 @@ async function getAccessToken() {
       refresh_token: REFRESH_TOKEN
     })
   });
-  
-  return response.json();
+
+  const data = await response.json();
+  if (!response.ok || !data.access_token) {
+    throw new Error(`Token refresh failed: ${response.status} ${JSON.stringify(data)}`);
+  }
+  return data;
 }
 
 export default async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
+
   try {
-    // Get fresh access token
     const { access_token } = await getAccessToken();
-    
-    // Fetch currently playing track
+
     const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-      headers: {
-        'Authorization': `Bearer ${access_token}`
-      }
+      headers: { 'Authorization': `Bearer ${access_token}` }
     });
-    
+
     if (response.status === 204 || response.status === 404) {
       return res.status(200).json({ isPlaying: false });
     }
-    
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`Spotify API ${response.status}: ${errBody}`);
+    }
+
     const song = await response.json();
-    
     if (!song.item) {
       return res.status(200).json({ isPlaying: false });
     }
+
+  } catch (error) {
+    console.error('Error fetching currently playing:', error);
+    return res.status(500).json({ error: 'Failed to fetch currently playing track', details: error.message });
+  }
+}
     
     const isPlaying = song.is_playing;
     const title = song.item.name;
